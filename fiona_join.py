@@ -27,7 +27,6 @@ import fiona
 import sys
 import pandas as pd
 import numpy as np
-import collections
 
 INVALID_CHRS = " !@#$%^&*()`~<>,'\"\\=/+?\n\t\r"
 
