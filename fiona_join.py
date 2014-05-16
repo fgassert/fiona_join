@@ -53,9 +53,11 @@ def joincsvtoshp(shp, field1, in_csv, field2, out_shp):
     with fiona.open(shp) as source:
         df = pd.read_csv(in_csv)
         df.set_index(field2,inplace=True,verify_integrity=True)
-
+        
         schema = source.schema
         shpkeys = schema['properties'].keys()
+        if field1 not in shpkeys:
+            print 'Warning: %s not found, attempting to join by ID' % field1
         csvkeys = validcolumnnames(df.columns)
         csvkeys = ["_%s" % c if c in shpkeys else c for c in csvkeys]
         ncols = len(df.columns)
@@ -75,10 +77,14 @@ def joincsvtoshp(shp, field1, in_csv, field2, out_shp):
                         schema=schema) as outfile:
             for item in source:
                 p = item['properties']
-                if p[field1] in df.index:
+                if field1 in p:
+                    key = p[field1]
+                else:
+                    key = int(item['id'])
+                if key in df.index:
                     join_count += 1
                     for i in range(ncols):
-                        p[csvkeys[i]] = df[df.columns[i]][p[field1]]
+                        p[csvkeys[i]] = df[df.columns[i]][key]
                 else:
                     for i in range(ncols):
                         p[csvkeys[i]] = None
